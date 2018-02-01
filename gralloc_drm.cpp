@@ -210,6 +210,13 @@ int gralloc_drm_handle_register(buffer_handle_t handle, struct gralloc_drm_t *dr
         return -EINVAL;
     }
 
+    //If handle is modified,then we need update bo->handle.
+    if(bo->imported==1 && (unsigned long)bo->handle != (unsigned long)handle)
+    {
+        ALOGD_IF(RK_DRM_GRALLOC_DEBUG, "%s: update bo->handle=%p ==> handle=%p",__FUNCTION__,bo->handle,handle);
+        bo->handle = (struct gralloc_drm_handle_t *)handle;
+    }
+
     bo->refcount++;
     pthread_mutex_unlock(&bo_mutex);
 
@@ -227,7 +234,14 @@ int gralloc_drm_handle_unregister(buffer_handle_t handle)
 	if (!bo)
 		return -EINVAL;
 
-        gralloc_drm_bo_decref(bo);
+    //If handle is modified,then we need update bo->handle.
+    if(bo->imported==1 && (unsigned long)bo->handle != (unsigned long)handle)
+    {
+        ALOGD_IF(RK_DRM_GRALLOC_DEBUG, "%s: update bo->handle=%p ==> handle=%p",__FUNCTION__,bo->handle,handle);
+        bo->handle = (struct gralloc_drm_handle_t *)handle;
+    }
+
+    gralloc_drm_bo_decref(bo);
 
 	return 0;
 }
@@ -261,6 +275,7 @@ static struct gralloc_drm_handle_t *create_bo_handle(int width,
 	handle->attr_base = MAP_FAILED;
 #endif
 	handle->yuv_info = MALI_YUV_NO_INFO;
+	handle->phy_addr = 0;
 #endif
 	ALOGD_IF(RK_DRM_GRALLOC_DEBUG,"create_bo_handle handle: version=%d, numInts=%d, numFds=%d, magic=%x",
 		handle->base.version, handle->base.numInts,
@@ -364,6 +379,14 @@ int gralloc_drm_free_bo_from_handle(buffer_handle_t handle)
 	bo = validate_handle(handle, NULL);
 	if (!bo)
 		return -EINVAL;
+
+    //If handle is modified,then we need update bo->handle.
+    if(bo->imported==1 && (unsigned long)bo->handle != (unsigned long)handle)
+    {
+        ALOGD_IF(RK_DRM_GRALLOC_DEBUG, "%s: update bo->handle=%p ==> handle=%p",__FUNCTION__,bo->handle,handle);
+        bo->handle = (struct gralloc_drm_handle_t *)handle;
+    }
+
 	gralloc_drm_bo_decref(bo);
 
 	return 0;
@@ -456,6 +479,26 @@ void gralloc_drm_bo_unlock(struct gralloc_drm_bo_t *bo)
 	bo->lock_count--;
 	if (!bo->lock_count)
 		bo->locked_for = 0;
+}
+
+int gralloc_drm_handle_get_phy_addr(buffer_handle_t _handle, uint32_t *phy_addr)
+{
+	int ret = 0;
+	struct gralloc_drm_handle_t *handle = gralloc_drm_handle(_handle);
+
+	if (!handle)
+		return -EINVAL;
+
+	if (unlikely(handle->data_owner != gralloc_drm_pid)) {
+		ret = -EPERM;
+		ALOGE("handle get prime fd before register buffer.");
+	} else {
+		ret = 0;
+		*phy_addr = handle->phy_addr;
+	}
+
+    gralloc_drm_unlock_handle(_handle);
+	return ret;
 }
 
 int gralloc_drm_handle_get_prime_fd(buffer_handle_t _handle, int *fd)

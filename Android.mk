@@ -81,6 +81,9 @@ else
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := libgralloc_drm
+ifeq (1,$(strip $(shell expr $(PLATFORM_VERSION) \>= 8.0)))
+LOCAL_PROPRIETARY_MODULE := true
+endif
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SRC_FILES := \
@@ -149,17 +152,28 @@ endif
 
 ifeq ($(strip $(TARGET_BOARD_PLATFORM_GPU)), mali-t720)
 MALI_AFBC_GRALLOC := 0
+USE_AFBC_LAYER = 0
 LOCAL_CFLAGS += -DMALI_PRODUCT_ID_T72X=1
 endif
 
 ifeq ($(strip $(TARGET_BOARD_PLATFORM_GPU)), mali-t760)
 MALI_AFBC_GRALLOC := 1
+# rk3288 vop cann't support AFBC.
+ifneq ($(strip $(TARGET_BOARD_PLATFORM)),rk3288)
+USE_AFBC_LAYER = 1
+endif
 LOCAL_CFLAGS += -DMALI_PRODUCT_ID_T76X=1
 endif
 
 ifeq ($(strip $(TARGET_BOARD_PLATFORM_GPU)), mali-t860)
 MALI_AFBC_GRALLOC := 1
+USE_AFBC_LAYER = 1
 LOCAL_CFLAGS += -DMALI_PRODUCT_ID_T86X=1
+endif
+
+# Disable afbc in box platform.
+ifeq ($(strip $(TARGET_BOARD_PLATFORM_PRODUCT)),box)
+USE_AFBC_LAYER = 0
 endif
 
 ifeq ($(MALI_AFBC_GRALLOC), 1)
@@ -251,6 +265,9 @@ LOCAL_SHARED_LIBRARIES += \
 LOCAL_CFLAGS +=-DRK_DRM_GRALLOC=1 -DRK_DRM_GRALLOC_DEBUG=0 -DMALI_AFBC_GRALLOC=1
 
 LOCAL_MODULE := gralloc.$(TARGET_BOARD_HARDWARE)
+ifeq (1,$(strip $(shell expr $(PLATFORM_VERSION) \>= 8.0)))
+LOCAL_PROPRIETARY_MODULE := true
+endif
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_RELATIVE_PATH := hw
 include $(BUILD_SHARED_LIBRARY)

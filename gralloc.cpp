@@ -81,12 +81,23 @@ static int drm_mod_perform(const struct gralloc_module_t *mod, int op, ...)
 			err = 0;
 		}
 		break;
+	case GRALLOC_MODULE_PERFORM_GET_HADNLE_PHY_ADDR:
+		{
+			buffer_handle_t hnd = va_arg(args, buffer_handle_t);
+			uint32_t *phy_addr = va_arg(args, uint32_t *);
+
+			if (phy_addr != NULL)
+				err = gralloc_drm_handle_get_phy_addr(hnd,phy_addr);
+			else
+				err = -EINVAL;
+		}
+	    break;
 	case GRALLOC_MODULE_PERFORM_GET_HADNLE_PRIME_FD:
 		{
 			buffer_handle_t hnd = va_arg(args, buffer_handle_t);
 			int *fd = va_arg(args, int *);
 
-			if (fd > NULL)
+			if (fd !=  NULL)
 				err = gralloc_drm_handle_get_prime_fd(hnd,fd);
 			else
 				err = -EINVAL;
@@ -97,7 +108,7 @@ static int drm_mod_perform(const struct gralloc_module_t *mod, int op, ...)
 			buffer_handle_t hnd = va_arg(args, buffer_handle_t);
 			std::vector<int> *attrs = va_arg(args, std::vector<int> *);
 
-			if (attrs > NULL)
+			if (attrs != NULL)
 				err = gralloc_drm_handle_get_attributes(hnd, (void*)attrs);
 			else
 				err = -EINVAL;
@@ -108,7 +119,7 @@ static int drm_mod_perform(const struct gralloc_module_t *mod, int op, ...)
             buffer_handle_t hnd = va_arg(args, buffer_handle_t);
             uint64_t *internal_format = va_arg(args, uint64_t *);
 
-            if(internal_format > NULL)
+            if(internal_format != NULL)
                 err = gralloc_drm_handle_get_internal_format(hnd, internal_format);
             else
                 err = -EINVAL;
@@ -119,7 +130,7 @@ static int drm_mod_perform(const struct gralloc_module_t *mod, int op, ...)
             buffer_handle_t hnd = va_arg(args, buffer_handle_t);
             int *width = va_arg(args, int *);
 
-            if(width > NULL)
+            if(width !=  NULL)
                 err = gralloc_drm_handle_get_width(hnd, width);
             else
                 err = -EINVAL;
@@ -130,7 +141,7 @@ static int drm_mod_perform(const struct gralloc_module_t *mod, int op, ...)
             buffer_handle_t hnd = va_arg(args, buffer_handle_t);
             int *height = va_arg(args, int *);
 
-            if(height > NULL)
+            if(height != NULL)
                 err = gralloc_drm_handle_get_height(hnd, height);
             else
                 err = -EINVAL;
@@ -141,7 +152,7 @@ static int drm_mod_perform(const struct gralloc_module_t *mod, int op, ...)
             buffer_handle_t hnd = va_arg(args, buffer_handle_t);
             int *stride = va_arg(args, int *);
 
-            if(stride > NULL)
+            if(stride !=  NULL)
                 err = gralloc_drm_handle_get_stride(hnd, stride);
             else
                 err = -EINVAL;
@@ -152,7 +163,7 @@ static int drm_mod_perform(const struct gralloc_module_t *mod, int op, ...)
             buffer_handle_t hnd = va_arg(args, buffer_handle_t);
             int *byte_stride = va_arg(args, int *);
 
-            if(byte_stride > NULL)
+            if(byte_stride != NULL)
                 err = gralloc_drm_handle_get_byte_stride(hnd, byte_stride);
             else
                 err = -EINVAL;
@@ -163,7 +174,7 @@ static int drm_mod_perform(const struct gralloc_module_t *mod, int op, ...)
             buffer_handle_t hnd = va_arg(args, buffer_handle_t);
             int *format = va_arg(args, int *);
 
-            if(format > NULL)
+            if(format != NULL)
                 err = gralloc_drm_handle_get_format(hnd, format);
             else
                 err = -EINVAL;
@@ -174,7 +185,7 @@ static int drm_mod_perform(const struct gralloc_module_t *mod, int op, ...)
             buffer_handle_t hnd = va_arg(args, buffer_handle_t);
             int *size = va_arg(args, int *);
 
-            if(size > NULL)
+            if(size != NULL)
                 err = gralloc_drm_handle_get_size(hnd, size);
             else
                 err = -EINVAL;
@@ -185,7 +196,7 @@ static int drm_mod_perform(const struct gralloc_module_t *mod, int op, ...)
             buffer_handle_t hnd = va_arg(args, buffer_handle_t);
             int *usage = va_arg(args, int *);
 
-            if(usage > NULL)
+            if(usage != NULL)
                 err = gralloc_drm_handle_get_usage(hnd, usage);
             else
                 err = -EINVAL;
